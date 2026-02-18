@@ -41,7 +41,6 @@
         ::-webkit-scrollbar-thumb {
             background-color: #d1d5db;
             border-radius: 20px;
-            border: 3px solid transparent;
         }
         .dark ::-webkit-scrollbar-thumb {
             background-color: #4b5563;
@@ -58,6 +57,17 @@
         .modal-backdrop {
             transition: opacity 0.3s ease-in-out;
         }
+        
+        .devices-container {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out, padding 0.5s ease-in-out;
+            padding: 0 1.5rem;
+        }
+        .devices-container.expanded {
+            max-height: 500px; /* Adjust as needed */
+            padding: 1rem 0;
+        }
     </style>
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans antialiased">
@@ -71,12 +81,19 @@
                 </svg>
                 <span class="ml-2 text-xl font-bold">SubManager</span>
             </div>
-            <nav class="flex-1 px-4 py-6 space-y-2">
-                <a href="#" class="flex items-center px-4 py-2 text-gray-700 dark:text-gray-200 bg-gray-200 dark:bg-gray-700 rounded-md">
+            <nav id="main-nav" class="flex-1 px-4 py-6 space-y-2">
+                <a href="#" data-view="dashboard" class="nav-link flex items-center px-4 py-2 rounded-md">
                     <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"/></svg>
                     <span class="ml-3">Dashboard</span>
                 </a>
-                <!-- Future nav links can go here -->
+                <a href="#" data-view="customers" class="nav-link flex items-center px-4 py-2 rounded-md">
+                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.653-.124-1.28-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.653.124-1.28.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                    <span class="ml-3">Customers</span>
+                </a>
+                <a href="#" data-view="devices" class="nav-link flex items-center px-4 py-2 rounded-md">
+                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                    <span class="ml-3">Devices</span>
+                </a>
             </nav>
             <div class="p-4 border-t border-gray-200 dark:border-gray-700">
                 <button id="import-btn" class="w-full flex items-center justify-center px-4 py-2 mb-2 text-sm font-medium text-white bg-primary-600 rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
@@ -107,105 +124,165 @@
                 </div>
             </header>
 
-            <!-- Dashboard Area -->
+            <!-- Content Area -->
             <div id="content-area" class="flex-1 overflow-x-hidden overflow-y-auto p-6 bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
-                <h1 class="text-3xl font-bold mb-6">Dashboard</h1>
+                
+                <!-- Dashboard View -->
+                <div id="dashboard-view" class="view-container">
+                    <h1 class="text-3xl font-bold mb-6">Dashboard</h1>
+                    <!-- Stat Cards -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-6">
+                        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Customers</p>
+                                <p id="total-customers" class="text-3xl font-bold">0</p>
+                            </div>
+                            <div class="bg-blue-100 dark:bg-blue-900/50 text-blue-500 dark:text-blue-400 p-3 rounded-full">
+                                <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.653-.124-1.28-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.653.124-1.28.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                            </div>
+                        </div>
+                        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Devices</p>
+                                <p id="total-devices" class="text-3xl font-bold">0</p>
+                            </div>
+                            <div class="bg-indigo-100 dark:bg-indigo-900/50 text-indigo-500 dark:text-indigo-400 p-3 rounded-full">
+                                <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                            </div>
+                        </div>
+                        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Active Subs</p>
+                                <p id="active-subs" class="text-3xl font-bold">0</p>
+                            </div>
+                            <div class="bg-green-100 dark:bg-green-900/50 text-green-500 dark:text-green-400 p-3 rounded-full">
+                                <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            </div>
+                        </div>
+                        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Expiring Soon</p>
+                                <p id="expiring-soon" class="text-3xl font-bold">0</p>
+                            </div>
+                            <div class="bg-yellow-100 dark:bg-yellow-900/50 text-yellow-500 dark:text-yellow-400 p-3 rounded-full">
+                                <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                            </div>
+                        </div>
+                        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Expired Subs</p>
+                                <p id="expired-subs" class="text-3xl font-bold">0</p>
+                            </div>
+                            <div class="bg-red-100 dark:bg-red-900/50 text-red-500 dark:text-red-400 p-3 rounded-full">
+                                <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+                            </div>
+                        </div>
+                    </div>
 
-                <!-- Stat Cards -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-6">
-                    <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Customers</p>
-                            <p id="total-customers" class="text-3xl font-bold">0</p>
-                        </div>
-                        <div class="bg-blue-100 dark:bg-blue-900/50 text-blue-500 dark:text-blue-400 p-3 rounded-full">
-                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.653-.124-1.28-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.653.124-1.28.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-                        </div>
-                    </div>
-                     <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Devices</p>
-                            <p id="total-devices" class="text-3xl font-bold">0</p>
-                        </div>
-                        <div class="bg-indigo-100 dark:bg-indigo-900/50 text-indigo-500 dark:text-indigo-400 p-3 rounded-full">
-                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
-                        </div>
-                    </div>
-                     <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Active Subs</p>
-                            <p id="active-subs" class="text-3xl font-bold">0</p>
-                        </div>
-                        <div class="bg-green-100 dark:bg-green-900/50 text-green-500 dark:text-green-400 p-3 rounded-full">
-                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        </div>
-                    </div>
-                     <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Expiring Soon</p>
-                            <p id="expiring-soon" class="text-3xl font-bold">0</p>
-                        </div>
-                        <div class="bg-yellow-100 dark:bg-yellow-900/50 text-yellow-500 dark:text-yellow-400 p-3 rounded-full">
-                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                        </div>
-                    </div>
-                     <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Expired Subs</p>
-                            <p id="expired-subs" class="text-3xl font-bold">0</p>
-                        </div>
-                        <div class="bg-red-100 dark:bg-red-900/50 text-red-500 dark:text-red-400 p-3 rounded-full">
-                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+                    <!-- Expiring Soon Section -->
+                    <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md mb-6">
+                        <h2 id="expiring-soon-title" class="text-2xl font-bold mb-4">Expiring Soon (Next 30 Days)</h2>
+                        <div id="expiring-soon-list" class="space-y-3 max-h-60 overflow-y-auto">
+                            <!-- Expiring devices will be listed here -->
                         </div>
                     </div>
                 </div>
 
-                <!-- Customer Management Section -->
-                <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
-                    <div class="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
-                        <h2 class="text-2xl font-bold">Customers</h2>
-                        <div class="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
-                           <div class="relative w-full sm:w-auto">
-                                <input type="text" id="search-input" placeholder="Search customers..." class="w-full sm:w-64 pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500">
-                                <svg class="h-5 w-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                           </div>
-                           <div id="filter-buttons" class="flex items-center gap-2">
-                                <button data-filter="all" class="filter-btn bg-primary-500 text-white px-3 py-1 text-sm rounded-md">All</button>
-                                <button data-filter="active" class="filter-btn bg-white dark:bg-gray-700 px-3 py-1 text-sm rounded-md border border-gray-300 dark:border-gray-600">Active</button>
-                                <button data-filter="expiring" class="filter-btn bg-white dark:bg-gray-700 px-3 py-1 text-sm rounded-md border border-gray-300 dark:border-gray-600">Expiring</button>
-                                <button data-filter="expired" class="filter-btn bg-white dark:bg-gray-700 px-3 py-1 text-sm rounded-md border border-gray-300 dark:border-gray-600">Expired</button>
-                           </div>
-                           <button id="add-customer-btn" class="w-full sm:w-auto flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
-                                <svg class="h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
-                                Add Customer
-                            </button>
+                <!-- Customers View -->
+                <div id="customers-view" class="view-container hidden">
+                    <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
+                        <div class="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
+                            <h2 class="text-2xl font-bold">Customers</h2>
+                            <div class="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+                                <div class="relative w-full sm:w-auto">
+                                    <input type="text" id="customer-search-input" placeholder="Search customers..." class="w-full sm:w-64 pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500">
+                                    <svg class="h-5 w-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                                </div>
+                                <div id="customer-filter-buttons" class="flex items-center gap-2">
+                                    <button data-filter="all" class="filter-btn bg-primary-500 text-white px-3 py-1 text-sm rounded-md">All</button>
+                                    <button data-filter="active" class="filter-btn bg-white dark:bg-gray-700 px-3 py-1 text-sm rounded-md border border-gray-300 dark:border-gray-600">Active</button>
+                                    <button data-filter="expiring" class="filter-btn bg-white dark:bg-gray-700 px-3 py-1 text-sm rounded-md border border-gray-300 dark:border-gray-600">Expiring</button>
+                                    <button data-filter="expired" class="filter-btn bg-white dark:bg-gray-700 px-3 py-1 text-sm rounded-md border border-gray-300 dark:border-gray-600">Expired</button>
+                                </div>
+                                <button id="add-customer-btn" class="w-full sm:w-auto flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                                    <svg class="h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+                                    Add Customer
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                                <tr>
-                                    <th scope="col" class="px-6 py-3">Customer</th>
-                                    <th scope="col" class="px-6 py-3">Company</th>
-                                    <th scope="col" class="px-6 py-3">Devices</th>
-                                    <th scope="col" class="px-6 py-3">Status</th>
-                                    <th scope="col" class="px-6 py-3 text-right">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="customer-table-body">
-                                <!-- Customer rows will be inserted here -->
-                            </tbody>
-                        </table>
-                        <div id="empty-state" class="hidden text-center py-16">
-                            <svg class="mx-auto h-24 w-24 text-gray-300 dark:text-gray-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                            <h3 class="mt-4 text-xl font-semibold text-gray-800 dark:text-gray-200">No Customers Found</h3>
-                            <p class="mt-1 text-gray-500">Get started by adding a new customer.</p>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                    <tr>
+                                        <th scope="col" class="px-6 py-3">Customer</th>
+                                        <th scope="col" class="px-6 py-3">Company</th>
+                                        <th scope="col" class="px-6 py-3">Devices</th>
+                                        <th scope="col" class="px-6 py-3">Status</th>
+                                        <th scope="col" class="px-6 py-3 text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="customer-table-body">
+                                    <!-- Customer rows will be inserted here -->
+                                </tbody>
+                            </table>
+                            <div id="customer-empty-state" class="hidden text-center py-16">
+                                <svg class="mx-auto h-24 w-24 text-gray-300 dark:text-gray-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                <h3 class="mt-4 text-xl font-semibold text-gray-800 dark:text-gray-200">No Customers Found</h3>
+                                <p class="mt-1 text-gray-500">Get started by adding a new customer.</p>
+                            </div>
                         </div>
                     </div>
                 </div>
+                
+                <!-- Devices View -->
+                <div id="devices-view" class="view-container hidden">
+                    <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
+                        <div class="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
+                            <h2 class="text-2xl font-bold">All Devices</h2>
+                            <div class="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+                                <div class="relative w-full sm:w-auto">
+                                    <input type="text" id="device-search-input" placeholder="Search all devices..." class="w-full sm:w-64 pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500">
+                                    <svg class="h-5 w-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                                </div>
+                                <div id="device-filter-buttons" class="flex items-center gap-2">
+                                    <button data-filter="all" class="filter-btn bg-primary-500 text-white px-3 py-1 text-sm rounded-md">All</button>
+                                    <button data-filter="active" class="filter-btn bg-white dark:bg-gray-700 px-3 py-1 text-sm rounded-md border border-gray-300 dark:border-gray-600">Active</button>
+                                    <button data-filter="expiring" class="filter-btn bg-white dark:bg-gray-700 px-3 py-1 text-sm rounded-md border border-gray-300 dark:border-gray-600">Expiring</button>
+                                    <button data-filter="expired" class="filter-btn bg-white dark:bg-gray-700 px-3 py-1 text-sm rounded-md border border-gray-300 dark:border-gray-600">Expired</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                    <tr>
+                                        <th scope="col" class="px-6 py-3">Customer</th>
+                                        <th scope="col" class="px-6 py-3">Car Name</th>
+                                        <th scope="col" class="px-6 py-3">Device Name</th>
+                                        <th scope="col" class="px-6 py-3">IMEI</th>
+                                        <th scope="col" class="px-6 py-3">Phone #</th>
+                                        <th scope="col" class="px-6 py-3">Sub End</th>
+                                        <th scope="col" class="px-6 py-3">Status</th>
+                                        <th scope="col" class="px-6 py-3 text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="all-devices-table-body">
+                                    <!-- All devices rows will be inserted here -->
+                                </tbody>
+                            </table>
+                            <div id="all-devices-empty-state" class="hidden text-center py-16">
+                                <svg class="mx-auto h-24 w-24 text-gray-300 dark:text-gray-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                </svg>
+                                <h3 class="mt-4 text-xl font-semibold text-gray-800 dark:text-gray-200">No Devices Found</h3>
+                                <p class="mt-1 text-gray-500">Add a customer and a device to get started.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </main>
     </div>
@@ -241,58 +318,42 @@
         </div>
     </div>
     
-    <!-- Customer Details Modal -->
-    <div id="customer-details-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-50 items-center justify-center hidden modal-backdrop">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-3xl m-4 transform transition-transform duration-300 scale-95 overflow-hidden">
+    <!-- Add/Edit Device Modal -->
+    <div id="device-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-50 items-center justify-center hidden modal-backdrop">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl m-4 transform transition-transform duration-300 scale-95 overflow-hidden">
             <div class="p-6">
-                <div class="flex justify-between items-start border-b pb-3 dark:border-gray-700">
-                    <div>
-                        <h3 class="text-xl font-semibold" id="details-customer-name"></h3>
-                        <p class="text-sm text-gray-500" id="details-customer-email"></p>
-                    </div>
-                    <button id="close-details-modal" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-2xl">&times;</button>
+                <div class="flex justify-between items-center border-b pb-3 dark:border-gray-700">
+                    <h3 class="text-xl font-semibold" id="device-modal-title">Add Device</h3>
+                    <button id="close-device-modal" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-2xl">&times;</button>
                 </div>
-                <div class="mt-4">
-                    <div class="flex justify-between items-center mb-4">
-                        <h4 class="text-lg font-semibold">Devices</h4>
-                        <button id="add-device-btn" class="flex items-center px-3 py-1.5 text-sm font-medium text-white bg-primary-600 rounded-md hover:bg-primary-700 focus:outline-none">
-                            <svg class="h-4 w-4 mr-1.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
-                            Add Device
-                        </button>
+                <form id="device-form" class="mt-4 space-y-4">
+                    <input type="hidden" id="device-customer-id">
+                    <input type="hidden" id="device-id">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input type="text" id="deviceName" placeholder="Device Name" required class="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                        <input type="text" id="carName" placeholder="Car Name" required class="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                        <input type="text" id="imeiNumber" placeholder="IMEI Number" required pattern="\d{15,}" title="IMEI should be at least 15 digits." class="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                        <input type="tel" id="phoneNumber" placeholder="Device Phone Number" required pattern="[0-9\+\-\s\(\)]{7,}" title="Please enter a valid phone number." class="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
                     </div>
-                    <div id="device-form-container" class="hidden bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg mb-4">
-                        <form id="device-form" class="space-y-3">
-                            <input type="hidden" id="device-customer-id">
-                            <input type="hidden" id="device-id">
-                            <h5 class="font-semibold text-md" id="device-form-title">Add New Device</h5>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <input type="text" id="device-name" placeholder="Device Name" required class="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
-                                <input type="text" id="device-serial" placeholder="Serial Number" required class="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
-                            </div>
-                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div>
-                                    <label for="start-date" class="text-xs text-gray-500">Start Date</label>
-                                    <input type="date" id="start-date" required class="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
-                                </div>
-                                <div>
-                                    <label for="end-date" class="text-xs text-gray-500">End Date</label>
-                                    <input type="date" id="end-date" required class="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
-                                </div>
-                                <div>
-                                    <label for="sim-expiry" class="text-xs text-gray-500">SIM Expiry</label>
-                                    <input type="date" id="sim-expiry" required class="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
-                                </div>
-                            </div>
-                            <div class="flex justify-end gap-2">
-                                <button type="button" id="cancel-device-form" class="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 dark:bg-gray-600 dark:text-gray-200 dark:border-gray-500">Cancel</button>
-                                <button type="submit" class="px-3 py-1.5 text-sm font-medium text-white bg-primary-600 border border-transparent rounded-md shadow-sm hover:bg-primary-700">Save Device</button>
-                            </div>
-                        </form>
+                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+                        <div>
+                            <label for="subscriptionStart" class="text-xs text-gray-500">Subscription Start</label>
+                            <input type="date" id="subscriptionStart" required class="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                        </div>
+                        <div>
+                            <label for="subscriptionEnd" class="text-xs text-gray-500">Subscription End</label>
+                            <input type="date" id="subscriptionEnd" required class="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                        </div>
+                        <div>
+                            <label for="simExpiration" class="text-xs text-gray-500">SIM Expiration</label>
+                            <input type="date" id="simExpiration" required class="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                        </div>
                     </div>
-                    <div id="devices-list" class="space-y-3 max-h-96 overflow-y-auto pr-2">
-                        <!-- Devices will be listed here -->
+                    <div class="flex justify-end gap-2 pt-4">
+                        <button type="button" id="cancel-device-form" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 dark:bg-gray-600 dark:text-gray-200 dark:border-gray-500">Cancel</button>
+                        <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-primary-600 border border-transparent rounded-md shadow-sm hover:bg-primary-700">Save Device</button>
                     </div>
-                </div>
+                </form>
             </div>
         </div>
     </div>
@@ -318,39 +379,41 @@
 document.addEventListener('DOMContentLoaded', () => {
 
     // --- STATE MANAGEMENT ---
-    let appData = {
-        customers: []
-    };
+    let appData = { customers: [] };
+    let currentView = 'dashboard';
     
-    let currentFilter = 'all';
-    let currentSearch = '';
+    let customerFilter = 'all';
+    let customerSearch = '';
+    let deviceFilter = 'all';
+    let deviceSearch = '';
 
     // --- DOM ELEMENTS ---
     const customerTableBody = document.getElementById('customer-table-body');
-    const emptyState = document.getElementById('empty-state');
+    const allDevicesTableBody = document.getElementById('all-devices-table-body');
+    const customerEmptyState = document.getElementById('customer-empty-state');
+    const allDevicesEmptyState = document.getElementById('all-devices-empty-state');
     
     // Modals
     const customerModal = document.getElementById('customer-modal');
-    const detailsModal = document.getElementById('customer-details-modal');
+    const deviceModal = document.getElementById('device-modal');
     const confirmModal = document.getElementById('confirm-modal');
     
     // Forms
     const customerForm = document.getElementById('customer-form');
     const deviceForm = document.getElementById('device-form');
-    const deviceFormContainer = document.getElementById('device-form-container');
 
     // --- UTILITY FUNCTIONS ---
-    const getStatus = (endDateStr) => {
-        if (!endDateStr) return { text: 'Unknown', color: 'gray' };
+    const getStatus = (subscriptionEndStr) => {
+        if (!subscriptionEndStr) return { text: 'Unknown', color: 'gray', days: null };
         const now = new Date();
         now.setHours(0, 0, 0, 0);
-        const endDate = new Date(endDateStr);
+        const endDate = new Date(subscriptionEndStr);
         const diffTime = endDate - now;
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-        if (diffDays < 0) return { text: 'Expired', color: 'red' };
-        if (diffDays <= 30) return { text: 'Expiring Soon', color: 'yellow' };
-        return { text: 'Active', color: 'green' };
+        if (diffDays < 0) return { text: 'Expired', color: 'red', days: diffDays };
+        if (diffDays <= 30) return { text: 'Expiring Soon', color: 'yellow', days: diffDays };
+        return { text: 'Active', color: 'green', days: diffDays };
     };
 
     const formatDate = (dateStr) => {
@@ -362,15 +425,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const createId = () => `id_${new Date().getTime()}_${Math.random().toString(36).substr(2, 9)}`;
 
     const animateCount = (element, target) => {
-        let current = 0;
+        let current = parseInt(element.textContent) || 0;
+        if(current === target) return;
         const duration = 1000;
         const stepTime = 20;
         const steps = duration / stepTime;
-        const increment = target / steps;
+        const increment = (target - current) / steps;
         
         const timer = setInterval(() => {
             current += increment;
-            if (current >= target) {
+            if ((increment > 0 && current >= target) || (increment < 0 && current <= target)) {
                 element.textContent = target;
                 clearInterval(timer);
             } else {
@@ -383,10 +447,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!customer.devices || customer.devices.length === 0) {
             return { text: 'No Devices', color: 'gray' };
         }
-        let hasActive = false;
-        let hasExpiring = false;
+        let hasActive = false, hasExpiring = false;
         for (const device of customer.devices) {
-            const status = getStatus(device.endDate);
+            const status = getStatus(device.subscriptionEnd);
             if (status.color === 'red') return { text: 'Expired', color: 'red' };
             if (status.color === 'yellow') hasExpiring = true;
             if (status.color === 'green') hasActive = true;
@@ -396,8 +459,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return { text: 'No Active Devices', color: 'gray' };
     };
 
-
-    // --- LOCAL STORAGE ---
+    // --- LOCAL STORAGE & MIGRATION ---
     const saveData = () => {
         localStorage.setItem('subManagerData', JSON.stringify(appData));
     };
@@ -406,24 +468,55 @@ document.addEventListener('DOMContentLoaded', () => {
         const data = localStorage.getItem('subManagerData');
         if (data) {
             appData = JSON.parse(data);
+            let needsSave = false;
+            appData.customers.forEach(customer => {
+                if (customer.devices?.length) {
+                    customer.devices.forEach((device, index) => {
+                        if (device.hasOwnProperty('name') && !device.hasOwnProperty('deviceName')) {
+                            needsSave = true;
+                            customer.devices[index] = {
+                                id: device.id, deviceName: device.name || '', carName: '', imeiNumber: device.serial || '',
+                                phoneNumber: '', subscriptionStart: device.startDate || '', subscriptionEnd: device.endDate || '',
+                                simExpiration: device.simExpiry || '',
+                            };
+                        }
+                    });
+                }
+            });
+            if (needsSave) saveData();
         } else {
-            // Load sample data if nothing in storage
             appData = getSampleData();
             saveData();
         }
     };
     
-    // --- RENDERING ---
-    const renderDashboard = () => {
-        let totalDevices = 0;
-        let activeSubs = 0;
-        let expiringSoon = 0;
-        let expiredSubs = 0;
+    // --- VIEW MANAGEMENT ---
+    const switchView = (viewId) => {
+        currentView = viewId;
+        document.querySelectorAll('.view-container').forEach(view => view.classList.add('hidden'));
+        document.getElementById(`${viewId}-view`)?.classList.remove('hidden');
 
+        document.querySelectorAll('#main-nav .nav-link').forEach(link => {
+            const isActive = link.dataset.view === viewId;
+            link.classList.toggle('bg-gray-200', isActive);
+            link.classList.toggle('dark:bg-gray-700', isActive);
+            link.classList.toggle('text-gray-900', isActive);
+            link.classList.toggle('dark:text-gray-100', isActive);
+            link.classList.toggle('text-gray-500', !isActive);
+            link.classList.toggle('dark:text-gray-400', !isActive);
+        });
+
+        if (viewId === 'customers') renderCustomers();
+        if (viewId === 'devices') renderAllDevices();
+    };
+
+    // --- RENDERING ---
+    const renderDashboardStats = () => {
+        let totalDevices = 0, activeSubs = 0, expiringSoon = 0, expiredSubs = 0;
         appData.customers.forEach(c => {
             totalDevices += c.devices.length;
             c.devices.forEach(d => {
-                const status = getStatus(d.endDate);
+                const status = getStatus(d.subscriptionEnd);
                 if (status.color === 'green') activeSubs++;
                 if (status.color === 'yellow') expiringSoon++;
                 if (status.color === 'red') expiredSubs++;
@@ -435,458 +528,260 @@ document.addEventListener('DOMContentLoaded', () => {
         animateCount(document.getElementById('active-subs'), activeSubs);
         animateCount(document.getElementById('expiring-soon'), expiringSoon);
         animateCount(document.getElementById('expired-subs'), expiredSubs);
-
-        renderCustomers();
+        renderExpiringSoonList();
     };
     
-    const renderCustomers = () => {
-        customerTableBody.innerHTML = '';
+    const renderExpiringSoonList = () => {
+        const listEl = document.getElementById('expiring-soon-list');
+        const titleEl = document.getElementById('expiring-soon-title');
+        listEl.innerHTML = '';
+        const expiringDevices = appData.customers.flatMap(customer => 
+            customer.devices.map(device => ({ customer, device, status: getStatus(device.subscriptionEnd) }))
+        ).filter(({ status }) => status.color === 'yellow');
         
-        const filteredCustomers = appData.customers
-            .filter(c => {
-                const customerStatus = getStatusForCustomer(c).text.toLowerCase().replace(' ', '');
-                const filterMatch = currentFilter === 'all' || 
-                                    (currentFilter === 'active' && customerStatus === 'active') ||
-                                    (currentFilter === 'expiring' && customerStatus === 'expiringsoon') ||
-                                    (currentFilter === 'expired' && customerStatus === 'expired');
+        titleEl.textContent = `Expiring Soon (Next 30 Days) - ${expiringDevices.length}`;
 
-                const searchMatch = !currentSearch ||
-                                    c.name.toLowerCase().includes(currentSearch) ||
-                                    c.email.toLowerCase().includes(currentSearch) ||
-                                    c.company.toLowerCase().includes(currentSearch);
-                
-                return filterMatch && searchMatch;
-            });
-
-
-        if (filteredCustomers.length === 0) {
-            emptyState.classList.remove('hidden');
-            customerTableBody.parentElement.classList.add('hidden');
-        } else {
-            emptyState.classList.add('hidden');
-            customerTableBody.parentElement.classList.remove('hidden');
-            filteredCustomers.forEach(customer => {
-                const tr = document.createElement('tr');
-                tr.className = 'bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600';
-                
-                const overallStatus = getStatusForCustomer(customer);
-                const statusColors = {
-                    green: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-                    yellow: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
-                    red: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
-                    gray: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
-                };
-
-                tr.innerHTML = `
-                    <td class="px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap">
-                        <div class="font-bold">${customer.name}</div>
-                        <div class="text-xs text-gray-500">${customer.email}</div>
-                    </td>
-                    <td class="px-6 py-4">${customer.company}</td>
-                    <td class="px-6 py-4">${customer.devices.length}</td>
-                    <td class="px-6 py-4">
-                        <span class="px-2 py-1 text-xs font-medium rounded-full ${statusColors[overallStatus.color]}">${overallStatus.text}</span>
-                    </td>
-                    <td class="px-6 py-4 text-right">
-                        <button class="view-btn font-medium text-primary-600 dark:text-primary-500 hover:underline mr-4" data-id="${customer.id}">View/Manage</button>
-                        <button class="edit-btn font-medium text-blue-600 dark:text-blue-500 hover:underline mr-4" data-id="${customer.id}">Edit</button>
-                        <button class="delete-btn font-medium text-red-600 dark:text-red-500 hover:underline" data-id="${customer.id}">Delete</button>
-                    </td>
-                `;
-                customerTableBody.appendChild(tr);
-            });
-        }
-    };
-    
-    const renderDevices = (customerId) => {
-        const customer = appData.customers.find(c => c.id === customerId);
-        if (!customer) return;
-
-        const devicesList = document.getElementById('devices-list');
-        devicesList.innerHTML = '';
-
-        if (customer.devices.length === 0) {
-            devicesList.innerHTML = '<p class="text-center text-gray-500 py-4">No devices found for this customer.</p>';
+        if (expiringDevices.length === 0) {
+            listEl.innerHTML = '<p class="text-center text-gray-500 py-4">No subscriptions are expiring in the next 30 days.</p>';
             return;
         }
 
-        customer.devices.forEach(device => {
-            const status = getStatus(device.endDate);
-            const statusColors = {
-                green: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-                yellow: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
-                red: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
-                gray: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
-            };
-            const deviceEl = document.createElement('div');
-            deviceEl.className = 'p-4 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-800/50';
-            deviceEl.innerHTML = `
-                <div class="flex justify-between items-start">
-                    <div>
-                        <p class="font-bold">${device.name} <span class="text-xs font-normal text-gray-400">(${device.serial})</span></p>
-                        <span class="px-2 py-0.5 mt-1 inline-block text-xs font-medium rounded-full ${statusColors[status.color]}">${status.text}</span>
-                    </div>
-                    <div class="flex gap-2">
-                        <button class="edit-device-btn p-1 text-gray-500 hover:text-blue-500" data-customer-id="${customerId}" data-device-id="${device.id}">
-                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L16.732 3.732z"></path></svg>
-                        </button>
-                        <button class="delete-device-btn p-1 text-gray-500 hover:text-red-500" data-customer-id="${customerId}" data-device-id="${device.id}">
-                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                        </button>
-                    </div>
+        expiringDevices.sort((a,b) => a.status.days - b.status.days).forEach(({customer, device, status}) => {
+            const itemEl = document.createElement('div');
+            itemEl.className = 'p-3 rounded-lg border border-yellow-300 dark:border-yellow-700 bg-yellow-50 dark:bg-yellow-900/50 flex flex-wrap justify-between items-center';
+            itemEl.innerHTML = `
+                <div>
+                    <p class="font-bold text-sm text-gray-800 dark:text-gray-200">${customer.name} - ${device.carName}</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">Device: ${device.deviceName}</p>
                 </div>
-                <div class="mt-3 grid grid-cols-3 gap-4 text-xs text-gray-500 dark:text-gray-400">
-                    <div><span class="font-semibold text-gray-600 dark:text-gray-300">Start:</span> ${formatDate(device.startDate)}</div>
-                    <div><span class="font-semibold text-gray-600 dark:text-gray-300">End:</span> ${formatDate(device.endDate)}</div>
-                    <div><span class="font-semibold text-gray-600 dark:text-gray-300">SIM Expiry:</span> ${formatDate(device.simExpiry)}</div>
-                </div>
-            `;
-            devicesList.appendChild(deviceEl);
+                <div class="text-right">
+                    <p class="font-semibold text-sm text-yellow-800 dark:text-yellow-300">${status.days} days remaining</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">Ends: ${formatDate(device.subscriptionEnd)}</p>
+                </div>`;
+            listEl.appendChild(itemEl);
         });
     };
 
-    // --- MODAL MANAGEMENT ---
-    const openModal = (modal) => {
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-        setTimeout(() => {
-            modal.classList.add('opacity-100');
-            modal.querySelector('div > div').classList.remove('scale-95');
-        }, 10);
-    };
+    const renderCustomers = () => {
+        customerTableBody.innerHTML = '';
+        const filteredCustomers = appData.customers.filter(c => {
+            const status = getStatusForCustomer(c).text.toLowerCase().replace(' ', '');
+            const filterMatch = customerFilter === 'all' || (customerFilter === 'expiring' && status === 'expiringsoon') || status.includes(customerFilter);
+            const searchMatch = !customerSearch || c.name.toLowerCase().includes(customerSearch) || c.email.toLowerCase().includes(customerSearch) || c.company.toLowerCase().includes(customerSearch);
+            return filterMatch && searchMatch;
+        });
 
-    const closeModal = (modal) => {
-        modal.classList.remove('opacity-100');
-        modal.querySelector('div > div').classList.add('scale-95');
-        setTimeout(() => {
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-        }, 300);
+        customerEmptyState.classList.toggle('hidden', filteredCustomers.length > 0);
+        customerTableBody.parentElement.classList.toggle('hidden', filteredCustomers.length === 0);
+
+        filteredCustomers.forEach(customer => {
+            const tr = document.createElement('tr');
+            tr.className = 'bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600';
+            const status = getStatusForCustomer(customer);
+            const statusColors = { green: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300', yellow: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300', red: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300', gray: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300' };
+            tr.innerHTML = `
+                <td class="px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap"><div class="font-bold">${customer.name}</div><div class="text-xs text-gray-500">${customer.email}</div></td>
+                <td class="px-6 py-4">${customer.company}</td>
+                <td class="px-6 py-4">${customer.devices.length}</td>
+                <td class="px-6 py-4"><span class="px-2 py-1 text-xs font-medium rounded-full ${statusColors[status.color]}">${status.text}</span></td>
+                <td class="px-6 py-4 text-right">
+                    <button class="view-devices-btn font-medium text-primary-600 dark:text-primary-500 hover:underline mr-4 inline-flex items-center" data-customer-id="${customer.id}"><span class="btn-text">View Devices</span><svg class="h-5 w-5 ml-1 transition-transform" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg></button>
+                    <button class="edit-btn font-medium text-blue-600 dark:text-blue-500 hover:underline mr-4" data-id="${customer.id}">Edit</button>
+                    <button class="delete-btn font-medium text-red-600 dark:text-red-500 hover:underline" data-id="${customer.id}">Delete</button>
+                </td>`;
+            const devicesRow = document.createElement('tr');
+            devicesRow.className = 'bg-gray-50 dark:bg-gray-900/50';
+            devicesRow.innerHTML = `<td colspan="5"><div id="devices-container-${customer.id}" class="devices-container">${generateDevicesTable(customer)}</div></td>`;
+            customerTableBody.appendChild(tr);
+            customerTableBody.appendChild(devicesRow);
+        });
     };
     
-    // --- CRUD OPERATIONS ---
-    const handleAddCustomer = () => {
-        customerForm.reset();
-        document.getElementById('customer-id').value = '';
-        document.getElementById('customer-modal-title').textContent = 'Add Customer';
-        openModal(customerModal);
+    const generateDevicesTable = (customer) => {
+        if (customer.devices.length === 0) {
+            return `<div class="text-center text-gray-500 py-4">No devices found. <button class="add-device-btn text-primary-500 hover:underline" data-customer-id="${customer.id}">Add one now</button>.</div>`;
+        }
+        const statusColors = { green: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300', yellow: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300', red: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300', gray: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300' };
+        const deviceRows = customer.devices.map(device => {
+            const status = getStatus(device.subscriptionEnd);
+            return `<tr class="border-b dark:border-gray-700">
+                    <td class="p-3">${device.carName}</td><td class="p-3">${device.deviceName}</td><td class="p-3">${device.imeiNumber}</td>
+                    <td class="p-3">${device.phoneNumber}</td><td class="p-3">${formatDate(device.subscriptionEnd)}</td>
+                    <td class="p-3"><span class="px-2 py-1 text-xs font-medium rounded-full ${statusColors[status.color]}">${status.text}</span></td>
+                    <td class="p-3 text-right">
+                        <button class="edit-device-btn p-1 text-gray-500 hover:text-blue-500" data-customer-id="${customer.id}" data-device-id="${device.id}"><svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L16.732 3.732z"></path></svg></button>
+                        <button class="delete-device-btn p-1 text-gray-500 hover:text-red-500" data-customer-id="${customer.id}" data-device-id="${device.id}"><svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                    </td></tr>`;}).join('');
+        return `<div class="flex justify-between items-center mb-2 px-2"><h4 class="font-semibold">Devices</h4><button class="add-device-btn text-sm text-primary-600 dark:text-primary-400 hover:underline" data-customer-id="${customer.id}">+ Add Device</button></div>
+            <table class="w-full text-xs"><thead class="bg-gray-100 dark:bg-gray-800"><tr>
+                <th class="p-3 text-left font-semibold">Car Name</th><th class="p-3 text-left font-semibold">Device Name</th><th class="p-3 text-left font-semibold">IMEI</th>
+                <th class="p-3 text-left font-semibold">Phone #</th><th class="p-3 text-left font-semibold">Sub End</th><th class="p-3 text-left font-semibold">Status</th>
+                <th class="p-3 text-right font-semibold"></th></tr></thead><tbody>${deviceRows}</tbody></table>`;
     };
 
+    const renderAllDevices = () => {
+        allDevicesTableBody.innerHTML = '';
+        const allDevices = appData.customers.flatMap(c => c.devices.map(d => ({ ...d, customerName: c.name, customerId: c.id })));
+        const filteredDevices = allDevices.filter(d => {
+            const status = getStatus(d.subscriptionEnd);
+            const filterMatch = deviceFilter === 'all' || (deviceFilter === 'expiring' && status.color === 'yellow') || status.color === deviceFilter;
+            const searchMatch = !deviceSearch || d.customerName.toLowerCase().includes(deviceSearch) || d.deviceName.toLowerCase().includes(deviceSearch) || d.carName.toLowerCase().includes(deviceSearch) || d.imeiNumber.toLowerCase().includes(deviceSearch) || d.phoneNumber.toLowerCase().includes(deviceSearch);
+            return filterMatch && searchMatch;
+        });
+
+        allDevicesEmptyState.classList.toggle('hidden', filteredDevices.length > 0);
+        allDevicesTableBody.parentElement.classList.toggle('hidden', filteredDevices.length === 0);
+
+        filteredDevices.forEach(device => {
+            const tr = document.createElement('tr');
+            tr.className = 'bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600';
+            const status = getStatus(device.subscriptionEnd);
+            const statusColors = { green: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300', yellow: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300', red: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300' };
+            tr.innerHTML = `
+                <td class="px-6 py-4">${device.customerName}</td><td class="px-6 py-4">${device.carName}</td><td class="px-6 py-4">${device.deviceName}</td>
+                <td class="px-6 py-4">${device.imeiNumber}</td><td class="px-6 py-4">${device.phoneNumber}</td><td class="px-6 py-4">${formatDate(device.subscriptionEnd)}</td>
+                <td class="px-6 py-4"><span class="px-2 py-1 text-xs font-medium rounded-full ${statusColors[status.color]}">${status.text}</span></td>
+                <td class="px-6 py-4 text-right">
+                    <button class="edit-device-btn font-medium text-blue-600 dark:text-blue-500 hover:underline mr-4" data-customer-id="${device.customerId}" data-device-id="${device.id}">Edit</button>
+                    <button class="delete-device-btn font-medium text-red-600 dark:text-red-500 hover:underline" data-customer-id="${device.customerId}" data-device-id="${device.id}">Delete</button>
+                </td>`;
+            allDevicesTableBody.appendChild(tr);
+        });
+    };
+
+    // --- MODAL & CRUD ---
+    const openModal = (modal) => {
+        modal.classList.remove('hidden'); modal.classList.add('flex');
+        setTimeout(() => { modal.classList.add('opacity-100'); modal.querySelector('div > div').classList.remove('scale-95'); }, 10);
+    };
+    const closeModal = (modal) => {
+        modal.classList.remove('opacity-100'); modal.querySelector('div > div').classList.add('scale-95');
+        setTimeout(() => { modal.classList.add('hidden'); modal.classList.remove('flex'); }, 300);
+    };
+    const handleAddCustomer = () => {
+        customerForm.reset(); document.getElementById('customer-id').value = '';
+        document.getElementById('customer-modal-title').textContent = 'Add Customer'; openModal(customerModal);
+    };
     const handleEditCustomer = (id) => {
         const customer = appData.customers.find(c => c.id === id);
         if(customer) {
-            document.getElementById('customer-id').value = customer.id;
-            document.getElementById('customer-name').value = customer.name;
-            document.getElementById('customer-email').value = customer.email;
-            document.getElementById('customer-company').value = customer.company;
-            document.getElementById('customer-modal-title').textContent = 'Edit Customer';
-            openModal(customerModal);
+            Object.keys(customer).forEach(key => { const el = document.getElementById(`customer-${key}`); if (el) el.value = customer[key]; });
+            document.getElementById('customer-modal-title').textContent = 'Edit Customer'; openModal(customerModal);
         }
     };
-    
     const handleDeleteCustomer = (id) => {
-        openConfirmModal({
-            title: 'Delete Customer',
-            text: 'Are you sure? This will delete the customer and all their devices. This action cannot be undone.',
-            onConfirm: () => {
-                appData.customers = appData.customers.filter(c => c.id !== id);
-                saveData();
-                renderDashboard();
-            }
-        });
+        openConfirmModal({ title: 'Delete Customer', text: 'Are you sure? This will delete the customer and all their devices. This action cannot be undone.', onConfirm: () => {
+            appData.customers = appData.customers.filter(c => c.id !== id);
+            saveData(); renderDashboardStats(); if(currentView === 'customers') renderCustomers();
+        }});
     };
-    
-    const handleViewCustomer = (id) => {
-        const customer = appData.customers.find(c => c.id === id);
-        if (customer) {
-            document.getElementById('details-customer-name').textContent = customer.name;
-            document.getElementById('details-customer-email').textContent = customer.email;
-            document.getElementById('device-customer-id').value = customer.id;
-            renderDevices(customer.id);
-            closeDeviceForm();
-            openModal(detailsModal);
-        }
+    const handleAddDevice = (customerId) => {
+        deviceForm.reset(); document.getElementById('device-modal-title').textContent = 'Add Device';
+        document.getElementById('device-customer-id').value = customerId; document.getElementById('device-id').value = '';
+        openModal(deviceModal);
     };
-    
-    const handleDeviceSave = (e) => {
-        e.preventDefault();
-        const customerId = document.getElementById('device-customer-id').value;
-        const deviceId = document.getElementById('device-id').value;
-        const customer = appData.customers.find(c => c.id === customerId);
-        
-        const deviceData = {
-            name: document.getElementById('device-name').value,
-            serial: document.getElementById('device-serial').value,
-            startDate: document.getElementById('start-date').value,
-            endDate: document.getElementById('end-date').value,
-            simExpiry: document.getElementById('sim-expiry').value,
-        };
-
-        if (deviceId) { // Editing
-            const deviceIndex = customer.devices.findIndex(d => d.id === deviceId);
-            customer.devices[deviceIndex] = { ...customer.devices[deviceIndex], ...deviceData };
-        } else { // Adding
-            customer.devices.push({ id: createId(), ...deviceData });
-        }
-
-        saveData();
-        renderDevices(customerId);
-        renderDashboard(); // To update stats
-        closeDeviceForm();
-    };
-    
     const handleEditDevice = (customerId, deviceId) => {
-        const customer = appData.customers.find(c => c.id === customerId);
-        const device = customer.devices.find(d => d.id === deviceId);
+        const device = appData.customers.find(c => c.id === customerId)?.devices.find(d => d.id === deviceId);
         if (device) {
-            document.getElementById('device-form-title').textContent = 'Edit Device';
-            document.getElementById('device-id').value = device.id;
-            document.getElementById('device-name').value = device.name;
-            document.getElementById('device-serial').value = device.serial;
-            document.getElementById('start-date').value = device.startDate;
-            document.getElementById('end-date').value = device.endDate;
-            document.getElementById('sim-expiry').value = device.simExpiry;
-            deviceFormContainer.classList.remove('hidden');
+            document.getElementById('device-modal-title').textContent = 'Edit Device';
+            Object.keys(device).forEach(key => { const el = document.getElementById(key); if (el) el.value = device[key]; });
+            document.getElementById('device-customer-id').value = customerId; document.getElementById('device-id').value = deviceId;
+            openModal(deviceModal);
         }
     };
-    
     const handleDeleteDevice = (customerId, deviceId) => {
-        openConfirmModal({
-            title: 'Delete Device',
-            text: 'Are you sure you want to delete this device?',
-            onConfirm: () => {
-                const customer = appData.customers.find(c => c.id === customerId);
-                customer.devices = customer.devices.filter(d => d.id !== deviceId);
-                saveData();
-                renderDevices(customerId);
-                renderDashboard();
-            }
-        });
+        openConfirmModal({ title: 'Delete Device', text: 'Are you sure you want to delete this device?', onConfirm: () => {
+            const customer = appData.customers.find(c => c.id === customerId);
+            if (customer) customer.devices = customer.devices.filter(d => d.id !== deviceId);
+            saveData(); renderDashboardStats();
+            if (currentView === 'customers') renderCustomers(); if (currentView === 'devices') renderAllDevices();
+        }});
     };
-    
-    const closeDeviceForm = () => {
-        deviceForm.reset();
-        document.getElementById('device-id').value = '';
-        deviceFormContainer.classList.add('hidden');
-    };
-
     let confirmCallback = null;
     const openConfirmModal = ({ title, text, onConfirm }) => {
         document.getElementById('confirm-modal-title').textContent = title;
         document.getElementById('confirm-modal-text').textContent = text;
-        confirmCallback = onConfirm;
-        openModal(confirmModal);
+        confirmCallback = onConfirm; openModal(confirmModal);
     };
 
     // --- EVENT LISTENERS ---
-    document.getElementById('add-customer-btn').addEventListener('click', handleAddCustomer);
-    
-    document.getElementById('close-customer-modal').addEventListener('click', () => closeModal(customerModal));
-    document.getElementById('cancel-customer-form').addEventListener('click', () => closeModal(customerModal));
-    
-    document.getElementById('close-details-modal').addEventListener('click', () => closeModal(detailsModal));
-    
-    document.getElementById('add-device-btn').addEventListener('click', () => {
-        document.getElementById('device-form-title').textContent = 'Add New Device';
-        deviceForm.reset();
-        document.getElementById('device-id').value = '';
-        deviceFormContainer.classList.toggle('hidden');
+    document.getElementById('main-nav').addEventListener('click', (e) => {
+        e.preventDefault(); const navLink = e.target.closest('.nav-link');
+        if (navLink?.dataset.view) switchView(navLink.dataset.view);
     });
-    
-    document.getElementById('cancel-device-form').addEventListener('click', closeDeviceForm);
-    
-    customerTableBody.addEventListener('click', (e) => {
-        const id = e.target.dataset.id;
-        if (e.target.classList.contains('edit-btn')) handleEditCustomer(id);
-        if (e.target.classList.contains('delete-btn')) handleDeleteCustomer(id);
-        if (e.target.classList.contains('view-btn')) handleViewCustomer(id);
-    });
-    
-    document.getElementById('devices-list').addEventListener('click', (e) => {
-        const button = e.target.closest('button');
-        if (!button) return;
-        
-        const customerId = button.dataset.customerId;
-        const deviceId = button.dataset.deviceId;
-
+    document.getElementById('content-area').addEventListener('click', (e) => {
+        const button = e.target.closest('button'); if(!button) return;
+        const { customerId, deviceId, id } = button.dataset;
+        if (button.classList.contains('edit-btn')) handleEditCustomer(id);
+        if (button.classList.contains('delete-btn')) handleDeleteCustomer(id);
+        if (button.classList.contains('add-device-btn')) handleAddDevice(customerId);
         if (button.classList.contains('edit-device-btn')) handleEditDevice(customerId, deviceId);
         if (button.classList.contains('delete-device-btn')) handleDeleteDevice(customerId, deviceId);
-    });
-
-    customerForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const id = document.getElementById('customer-id').value;
-        const customerData = {
-            name: document.getElementById('customer-name').value,
-            email: document.getElementById('customer-email').value,
-            company: document.getElementById('customer-company').value,
-        };
-
-        if (id) {
-            const index = appData.customers.findIndex(c => c.id === id);
-            appData.customers[index] = { ...appData.customers[index], ...customerData };
-        } else {
-            appData.customers.push({ 
-                id: createId(), 
-                ...customerData, 
-                devices: [], 
-                registered: new Date().toISOString().split('T')[0] 
-            });
-        }
-        
-        saveData();
-        renderDashboard();
-        closeModal(customerModal);
-    });
-    
-    deviceForm.addEventListener('submit', handleDeviceSave);
-    
-    document.getElementById('search-input').addEventListener('input', (e) => {
-        currentSearch = e.target.value.toLowerCase();
-        renderCustomers();
-    });
-    
-    document.getElementById('filter-buttons').addEventListener('click', (e) => {
-        if(e.target.tagName === 'BUTTON') {
-            currentFilter = e.target.dataset.filter;
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.classList.remove('bg-primary-500', 'text-white');
-                btn.classList.add('bg-white', 'dark:bg-gray-700');
-            });
-            e.target.classList.add('bg-primary-500', 'text-white');
-            e.target.classList.remove('bg-white', 'dark:bg-gray-700');
-            renderCustomers();
+        if (button.classList.contains('view-devices-btn')) {
+            const container = document.getElementById(`devices-container-${customerId}`);
+            const textSpan = button.querySelector('.btn-text');
+            const icon = button.querySelector('svg');
+            container.classList.toggle('expanded');
+            icon.classList.toggle('rotate-180');
+            textSpan.textContent = container.classList.contains('expanded') ? 'Hide Devices' : 'View Devices';
         }
     });
-
-    // Confirmation Modal Logic
-    document.getElementById('confirm-cancel-btn').addEventListener('click', () => {
-        confirmCallback = null;
-        closeModal(confirmModal);
+    document.getElementById('add-customer-btn').addEventListener('click', handleAddCustomer);
+    [customerModal, deviceModal, confirmModal].forEach(modal => {
+        modal.querySelector('[id^="close-"], [id^="cancel-"]').addEventListener('click', () => closeModal(modal));
     });
     document.getElementById('confirm-delete-btn').addEventListener('click', () => {
-        if (confirmCallback) {
-            confirmCallback();
-        }
-        confirmCallback = null;
-        closeModal(confirmModal);
+        if (confirmCallback) confirmCallback();
+        confirmCallback = null; closeModal(confirmModal);
     });
-
-    // --- DARK MODE ---
+    customerForm.addEventListener('submit', (e) => {
+        e.preventDefault(); const id = document.getElementById('customer-id').value;
+        const data = { name: document.getElementById('customer-name').value, email: document.getElementById('customer-email').value, company: document.getElementById('customer-company').value };
+        if (id) Object.assign(appData.customers.find(c => c.id === id), data);
+        else appData.customers.push({ id: createId(), ...data, devices: [], registered: new Date().toISOString().split('T')[0] });
+        saveData(); renderDashboardStats(); renderCustomers(); closeModal(customerModal);
+    });
+    deviceForm.addEventListener('submit', (e) => {
+        e.preventDefault(); const customerId = document.getElementById('device-customer-id').value;
+        const deviceId = document.getElementById('device-id').value; const customer = appData.customers.find(c => c.id === customerId);
+        const data = { deviceName: document.getElementById('deviceName').value, carName: document.getElementById('carName').value, imeiNumber: document.getElementById('imeiNumber').value, phoneNumber: document.getElementById('phoneNumber').value, subscriptionStart: document.getElementById('subscriptionStart').value, subscriptionEnd: document.getElementById('subscriptionEnd').value, simExpiration: document.getElementById('simExpiration').value };
+        if (deviceId) Object.assign(customer.devices.find(d => d.id === deviceId), data);
+        else customer.devices.push({ id: createId(), ...data });
+        saveData(); renderDashboardStats();
+        if (currentView === 'customers') renderCustomers(); if (currentView === 'devices') renderAllDevices();
+        closeModal(deviceModal);
+    });
+    document.getElementById('customer-search-input').addEventListener('input', (e) => { customerSearch = e.target.value.toLowerCase(); renderCustomers(); });
+    document.getElementById('customer-filter-buttons').addEventListener('click', (e) => { if(e.target.tagName === 'BUTTON') { customerFilter = e.target.dataset.filter; document.querySelectorAll('#customer-filter-buttons .filter-btn').forEach(btn => { btn.classList.toggle('bg-primary-500', btn === e.target); btn.classList.toggle('text-white', btn === e.target); btn.classList.toggle('bg-white', btn !== e.target); btn.classList.toggle('dark:bg-gray-700', btn !== e.target); }); renderCustomers(); }});
+    document.getElementById('device-search-input').addEventListener('input', (e) => { deviceSearch = e.target.value.toLowerCase(); renderAllDevices(); });
+    document.getElementById('device-filter-buttons').addEventListener('click', (e) => { if(e.target.tagName === 'BUTTON') { deviceFilter = e.target.dataset.filter; document.querySelectorAll('#device-filter-buttons .filter-btn').forEach(btn => { btn.classList.toggle('bg-primary-500', btn === e.target); btn.classList.toggle('text-white', btn === e.target); btn.classList.toggle('bg-white', btn !== e.target); btn.classList.toggle('dark:bg-gray-700', btn !== e.target); }); renderAllDevices(); }});
+    // Dark Mode, Import/Export
     const themeToggle = document.getElementById('theme-toggle');
-    const lightIcon = document.getElementById('theme-icon-light');
-    const darkIcon = document.getElementById('theme-icon-dark');
-
-    const applyTheme = (theme) => {
-        if (theme === 'dark') {
-            document.documentElement.classList.add('dark');
-            darkIcon.classList.add('hidden');
-            lightIcon.classList.remove('hidden');
-        } else {
-            document.documentElement.classList.remove('dark');
-            darkIcon.classList.remove('hidden');
-            lightIcon.classList.add('hidden');
-        }
-    };
-
-    themeToggle.addEventListener('click', () => {
-        const isDark = document.documentElement.classList.contains('dark');
-        const newTheme = isDark ? 'light' : 'dark';
-        localStorage.setItem('theme', newTheme);
-        applyTheme(newTheme);
+    const applyTheme = (theme) => { document.documentElement.classList.toggle('dark', theme === 'dark'); document.getElementById('theme-icon-dark').classList.toggle('hidden', theme === 'light'); document.getElementById('theme-icon-light').classList.toggle('hidden', theme === 'dark'); };
+    themeToggle.addEventListener('click', () => { const newTheme = document.documentElement.classList.contains('dark') ? 'light' : 'dark'; localStorage.setItem('theme', newTheme); applyTheme(newTheme); });
+    document.getElementById('import-btn').addEventListener('click', () => document.getElementById('import-file-input').click());
+    document.getElementById('export-btn').addEventListener('click', () => {
+        const a = document.createElement('a'); a.href = 'data:application/json;charset=utf-8,'+ encodeURIComponent(JSON.stringify(appData, null, 2));
+        a.download = 'submanager_backup.json'; a.click();
     });
-    
-    // --- IMPORT/EXPORT ---
-    const importBtn = document.getElementById('import-btn');
-    const exportBtn = document.getElementById('export-btn');
-    const importFileInput = document.getElementById('import-file-input');
-
-    importBtn.addEventListener('click', () => importFileInput.click());
-    
-    exportBtn.addEventListener('click', () => {
-        const dataStr = JSON.stringify(appData, null, 2);
-        const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-        
-        const exportFileDefaultName = 'submanager_backup.json';
-        
-        const linkElement = document.createElement('a');
-        linkElement.setAttribute('href', dataUri);
-        linkElement.setAttribute('download', exportFileDefaultName);
-        linkElement.click();
+    document.getElementById('import-file-input').addEventListener('change', (e) => {
+        const file = e.target.files[0]; if (!file) return; const reader = new FileReader();
+        reader.onload = (event) => { try { const data = JSON.parse(event.target.result); if (data?.customers) { appData = data; saveData(); renderDashboardStats(); switchView(currentView); alert('Data imported successfully!'); } else { alert('Invalid JSON format.'); } } catch (error) { alert('Error reading file.'); console.error(error); } };
+        reader.readAsText(file); e.target.value = '';
     });
-
-    importFileInput.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            try {
-                const importedData = JSON.parse(event.target.result);
-                // Basic validation
-                if (importedData && Array.isArray(importedData.customers)) {
-                    appData = importedData;
-                    saveData();
-                    renderDashboard();
-                    alert('Data imported successfully!');
-                } else {
-                    alert('Invalid JSON format.');
-                }
-            } catch (error) {
-                alert('Error reading or parsing the file.');
-                console.error(error);
-            }
-        };
-        reader.readAsText(file);
-        importFileInput.value = ''; // Reset for next import
-    });
-
     // --- INITIALIZATION ---
     function getSampleData() {
         const today = new Date();
-        const addDays = (date, days) => {
-            const result = new Date(date);
-            result.setDate(result.getDate() + days);
-            return result.toISOString().split('T')[0];
-        };
-    
-        return {
-            customers: [
-                {
-                    id: 'cust_1', name: 'Innovate Corp', email: 'contact@innovate.com', company: 'Innovate Corp', registered: '2023-01-15',
-                    devices: [
-                        { id: 'dev_1a', name: 'Field Unit 001', serial: 'SN-A001', startDate: addDays(today, -150), endDate: addDays(today, 215), simExpiry: addDays(today, 365) },
-                        { id: 'dev_1b', name: 'Lab Sensor 002', serial: 'SN-A002', startDate: addDays(today, -90), endDate: addDays(today, 275), simExpiry: addDays(today, 365) }
-                    ]
-                },
-                {
-                    id: 'cust_2', name: 'Quantum Solutions', email: 'support@quantum.com', company: 'Quantum Solutions', registered: '2023-03-22',
-                    devices: [
-                        { id: 'dev_2a', name: 'Gateway Alpha', serial: 'SN-B001', startDate: addDays(today, -60), endDate: addDays(today, 25), simExpiry: addDays(today, 180) }
-                    ]
-                },
-                {
-                    id: 'cust_3', name: 'Apex Logistics', email: 'ops@apexlog.com', company: 'Apex Logistics', registered: '2022-11-05',
-                    devices: [
-                        { id: 'dev_3a', name: 'Truck Tracker 7', serial: 'SN-C007', startDate: addDays(today, -400), endDate: addDays(today, -35), simExpiry: addDays(today, -10) },
-                         { id: 'dev_3b', name: 'Warehouse Monitor', serial: 'SN-C008', startDate: addDays(today, -200), endDate: addDays(today, 165), simExpiry: addDays(today, 180) }
-                    ]
-                },
-                 {
-                    id: 'cust_4', name: 'Stellar Industries', email: 'info@stellar.io', company: 'Stellar Industries', registered: '2023-08-01',
-                    devices: []
-                }
-            ]
-        };
+        const addDays = (d, days) => { const r = new Date(d); r.setDate(r.getDate() + days); return r.toISOString().split('T')[0]; };
+        return { customers: [ { id: 'cust_1', name: 'Innovate Corp', email: 'contact@innovate.com', company: 'Innovate Corp', registered: '2023-01-15', devices: [ { id: 'dev_1a', deviceName: 'Teltonika FMB920', carName: 'Ford Transit', imeiNumber: '358720071234567', phoneNumber: '12025550101', subscriptionStart: addDays(today, -150), subscriptionEnd: addDays(today, 215), simExpiration: addDays(today, 365) }, { id: 'dev_1b', deviceName: 'Queclink GL300', carName: 'Volvo V60', imeiNumber: '867654031234567', phoneNumber: '12025550102', subscriptionStart: addDays(today, -90), subscriptionEnd: addDays(today, 275), simExpiration: addDays(today, 365) } ] }, { id: 'cust_2', name: 'Quantum Solutions', email: 'support@quantum.com', company: 'Quantum Solutions', registered: '2023-03-22', devices: [ { id: 'dev_2a', deviceName: 'CalAmp LMU-800', carName: 'Honda Civic', imeiNumber: '123456789012345', phoneNumber: '12025550103', subscriptionStart: addDays(today, -60), subscriptionEnd: addDays(today, 25), simExpiration: addDays(today, 180) } ] }, { id: 'cust_3', name: 'Apex Logistics', email: 'ops@apexlog.com', company: 'Apex Logistics', registered: '2022-11-05', devices: [ { id: 'dev_3a', deviceName: 'Teltonika FMB125', carName: 'Scania R450', imeiNumber: '987654321098765', phoneNumber: '12025550104', subscriptionStart: addDays(today, -400), subscriptionEnd: addDays(today, -35), simExpiration: addDays(today, -10) }, { id: 'dev_3b', deviceName: 'Ruptela HCV5', carName: 'Mercedes Actros', imeiNumber: '567890123456789', phoneNumber: '12025550105', subscriptionStart: addDays(today, -200), subscriptionEnd: addDays(today, 165), simExpiration: addDays(today, 180) } ] }, { id: 'cust_4', name: 'Stellar Industries', email: 'info@stellar.io', company: 'Stellar Industries', registered: '2023-08-01', devices: [] } ] };
     }
-    
     function init() {
         const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
         applyTheme(savedTheme);
         loadData();
-        renderDashboard();
+        renderDashboardStats();
+        switchView('dashboard');
     }
-
     init();
 });
 </script>
