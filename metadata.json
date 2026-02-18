@@ -1,0 +1,5 @@
+{
+  "name": "Subscription Management Dashboard",
+  "description": "A professional SaaS-style dashboard for managing yearly subscriptions, built with vanilla HTML, CSS, and JavaScript. It features customer and device management, smart filters, data persistence via localStorage, JSON import/export, and a dark mode.",
+  "requestFramePermissions": []
+}
